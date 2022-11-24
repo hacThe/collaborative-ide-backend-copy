@@ -12,7 +12,6 @@ router.get('/', function (req, res, next) {
 
 /* POST create room with user */
 router.post('/create-room-with-user', async (req, res) => {
-  const { username } = req.body
   const roomId = v4()
 
   await redisClient.hSet(`${roomId}:info`, {

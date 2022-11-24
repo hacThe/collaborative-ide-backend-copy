@@ -6,8 +6,11 @@ const { Server } = require('socket.io')
 const cors = require('cors')
 const { blueBright, greenBright, redBright } = require('chalk')
 const { redisClient } = require('./redis_client')
+require('dotenv').config()
+
 
 var indexRouter = require('./routes/index');
+var compilerRouter = require('./routes/compiler')
 
 var app = express();
 const server = http.createServer(app)
@@ -29,6 +32,7 @@ app.use(cookieParser());
 
 // router
 app.use('/', indexRouter);
+app.use('/compiler/execute', compilerRouter);
 
 // socketio event handler
 io.on('connection', (socket) => {
