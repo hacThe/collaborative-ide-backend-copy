@@ -14,11 +14,14 @@ router.get('/', function (req, res, next) {
 router.post('/create-room-with-user', async (req, res) => {
   const roomId = v4()
 
-  await redisClient.hSet(`${roomId}:info`, {
-    created: moment(),
-    updated: moment(),
+  await redisClient.hSet(`${roomId}:roomInfo`, {
+    "created": moment().toString(),
+    "code": ""
   })
-    .catch((err) => console.log(redBright.bold(`ERROR: ${err}`)))
+    .catch((err) => {
+      console.log(redBright.bold(`create room info with ${err}`))
+      return
+    })
 
   res.status(201).send({ roomId })
 })
