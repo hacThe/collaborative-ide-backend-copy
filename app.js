@@ -36,6 +36,32 @@ app.use('/compiler/execute', compilerRouter);
 
 // socketio event handler
 io.on('connection', (socket) => {
+    socket.on('CURSOR_CHANGED', async (cursorData) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('CURSOR_CHANGED', cursorData);
+      })
+      
+      socket.on('SELECTION_CHANGED', async (selectionData) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('SELECTION_CHANGED', selectionData);
+      })
+
     socket.on('CODE_CHANGED', async (code) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
