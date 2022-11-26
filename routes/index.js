@@ -20,10 +20,31 @@ router.post('/create-room-with-user', async (req, res) => {
   })
     .catch((err) => {
       console.log(redBright.bold(`create room info with ${err}`))
+      res.status(500).send("Sorry! There are problems that we can't create room. Try again later")
       return
     })
 
   res.status(201).send({ roomId })
+})
+
+router.get('/find-room-with-id', async (req, res) => {
+  const findRoomId = `${req.body['roomId']}:roomInfo`
+
+  const findRoomResult = await redisClient.keys(findRoomId).catch((err) => {
+    console.log(redBright.bold(`find room with ${err}`))
+    res.status(404).send("Not found room")
+    return
+  })
+
+  if (findRoomResult.length != 0) {
+    console.log(greenBright.bold(`found rooms: ${findRoomResult}`))
+    res.status(200).send({
+      "foundRoomIds": findRoomResult
+    })
+  } else {
+    console.log(redBright.bold(`Not found room`))
+    res.status(404).send("Not found room")
+  }
 })
 
 module.exports = router;
