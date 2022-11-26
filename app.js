@@ -11,6 +11,7 @@ require('dotenv').config()
 
 var indexRouter = require('./routes/index');
 var compilerRouter = require('./routes/compiler')
+var saveCodeRouter = require('./routes/save-data')
 
 var app = express();
 const server = http.createServer(app)
@@ -33,6 +34,7 @@ app.use(cookieParser());
 // router
 app.use('/', indexRouter);
 app.use('/compiler/execute', compilerRouter);
+app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
 io.on('connection', (socket) => {
@@ -53,6 +55,7 @@ io.on('connection', (socket) => {
 
     socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
         const userId = socket.id
+        // create user info
         await redisClient.hSet(`${userId}:userInfo`, {
             "username": username,
             "roomId": roomId,
@@ -63,6 +66,7 @@ io.on('connection', (socket) => {
                 return
             })
 
+        // add user to room
         await redisClient.lPush(`${roomId}:users`, `${userId}`)
             .catch((err) => {
                 console.error(redBright.bold(`add user to room with ${err}`))
@@ -70,6 +74,7 @@ io.on('connection', (socket) => {
                 return
             })
 
+        // get current connected to room users
         const users = await redisClient.lRange(`${roomId}:users`, 0, -1)
             .catch((err) => {
                 console.error(redBright.bold(`get users with ${err}`))
@@ -81,20 +86,20 @@ io.on('connection', (socket) => {
         socket.join(roomName)
         io.in(roomName).emit('ROOM:CONNECTION', users)
 
-        // // get current code of roomName
-        // const code = await redisClient.hGet(`${roomId}:roomInfo`, 'code')
-        //     .catch((err) => {
-        //         console.error(redBright.bold(`get code of room with ${err}`))
-        //         // TODO: handle error
-        //         return
-        //     })
-        // console.log(`id: ${userId} get code: ${code}`)
-        // // emit event CODE_CHANGED to just connect user
-        // if (code.length != 0) socket.emit("CODE_CHANGED", code)
+        // get current code of roomName
+        const code = await redisClient.hGet(`${roomId}:roomInfo`, 'code')
+            .catch((err) => {
+                console.error(redBright.bold(`get code of room with ${err}`))
+                // TODO: handle error
+                return
+            })
+        // emit event CODE_CHANGED to just connect user
+        if (code.length != 0) socket.emit("CODE_CHANGED", code)
     })
 
     socket.on('disconnect', async () => {
         const userId = socket.id
+        // get disconnecting user info
         const userInfo = await redisClient.hGetAll(`${userId}:userInfo`).catch((err) => {
             console.error(redBright.bold(`get disconnect user with ${err}`))
             // TODO: handle error
@@ -102,11 +107,14 @@ io.on('connection', (socket) => {
         })
         const roomId = userInfo['roomId']
 
+        // delete user info
         await redisClient.del(`${userId}:userInfo`).catch((err) => {
             console.error(redBright.bold(`delete user info with ${err}`))
             // TODO: handle error
             return
         })
+
+        // remove user from room
         await redisClient.lRem(`${roomId}:users`, 0, userId).catch((err) => {
             console.error(redBright.bold(`remove user from room with ${err}`))
             // TODO: handle error
@@ -124,7 +132,7 @@ io.on('connection', (socket) => {
             io.in(roomName).emit('ROOM:CONNECTION', remainUsers)
         }
         else {
-            // consider remove room
+            //TODO consider remove room
         }
     })
 })
