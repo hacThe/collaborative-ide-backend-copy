@@ -7,6 +7,7 @@ const cors = require('cors')
 const { blueBright, greenBright, redBright } = require('chalk')
 const { redisClient } = require('./redis_client')
 require('dotenv').config()
+const SOCKET_IO_EVENT = require('./utils/constants')
 
 
 var indexRouter = require('./routes/index');
@@ -101,9 +102,9 @@ io.on('connection', (socket) => {
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
         socket.to(roomName).emit('CURSOR_CHANGED', cursorData);
-      })
-      
-      socket.on('SELECTION_CHANGED', async (selectionData) => {
+    })
+
+    socket.on('SELECTION_CHANGED', async (selectionData) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
@@ -114,7 +115,7 @@ io.on('connection', (socket) => {
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
         socket.to(roomName).emit('SELECTION_CHANGED', selectionData);
-      })
+    })
 
     socket.on('CODE_CHANGED', async (code) => {
         const userId = socket.id
@@ -126,13 +127,14 @@ io.on('connection', (socket) => {
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CODE_CHANGED', code)
+        socket.to(roomName).emit(SOCKET_IO_EVENT.CODE_CHANGED, code)
     })
 
     socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => console.log(blueBright.bold(`${username} disconnect from room ${roomId}`)))
 
-    socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
+    socket.on(SOCKET_IO_EVENT.CONNECTED_TO_ROOM, async ({ roomId, username }) => {
         const userId = socket.id
+        console.log("new user connected")
         // create user info
         await redisClient.hSet(`${userId}:userInfo`, {
             "username": username,
@@ -161,15 +163,15 @@ io.on('connection', (socket) => {
             })
 
         // get user info (id, username) by ids
-        const userIds = users.map((ids)=>`${ids}:userInfo`)
-        
+        const userIds = users.map((ids) => `${ids}:userInfo`)
+
         const userInfors = await Promise.all(userIds.map(async (id, index) => {
-            userIn4 =  await redisClient.hGetAll(id)
-            .catch((err)=> {
-                console.error(redBright.bold(`get users with ${err}`))
-                // TODO: handle error
-                return
-            })
+            userIn4 = await redisClient.hGetAll(id)
+                .catch((err) => {
+                    console.error(redBright.bold(`get users with ${err}`))
+                    // TODO: handle error
+                    return
+                })
 
             if (userIn4 != null) {
                 userIn4['id'] = users[index]
@@ -181,7 +183,7 @@ io.on('connection', (socket) => {
 
         const roomName = `ROOM:${roomId}`
         socket.join(roomName)
-        io.in(roomName).emit('ROOM:CONNECTION', {
+        io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_CONNECTION, {
             'users': userInfors,
             'newUserId': socket.id
         })
@@ -194,10 +196,10 @@ io.on('connection', (socket) => {
                 return
             })
         // emit event CODE_CHANGED to just connect user
-        if (code != null) socket.emit("CODE_CHANGED", code)
+        if (code != null) socket.emit(SOCKET_IO_EVENT.CODE_CHANGED, code)
     })
 
-    socket.on('disconnect', async () => {
+    socket.on(SOCKET_IO_EVENT.DISCONNECT, async () => {
         const userId = socket.id
         // get disconnecting user info
         const userInfo = await redisClient.hGetAll(`${userId}:userInfo`).catch((err) => {
@@ -229,7 +231,7 @@ io.on('connection', (socket) => {
 
         if (remainUsers.length != 0) {
             const roomName = `ROOM:${roomId}`
-            io.in(roomName).emit('ROOM:DISCONNECT', socket.id)
+            io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_CONNECTION, socket.id)
         }
         else {
             // delete user list in a room
