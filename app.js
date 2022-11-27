@@ -48,7 +48,7 @@ io.on('connection', (socket) => {
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CURSOR_CHANGED', output);
+        socket.to(roomName).emit('OUTPUT_CHANGED', output);
     })
 
     socket.on('CURSOR_CHANGED', async (cursorData) => {
