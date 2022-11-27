@@ -51,8 +51,6 @@ io.on('connection', (socket) => {
         socket.to(roomName).emit('CODE_CHANGED', code)
     })
 
-    socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => console.log(blueBright.bold(`${username} disconnect from room ${roomId}`)))
-
     socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
         const userId = socket.id
         // create user info
@@ -94,7 +92,7 @@ io.on('connection', (socket) => {
                 return
             })
         // emit event CODE_CHANGED to just connect user
-        if (code.length != 0) socket.emit("CODE_CHANGED", code)
+        if (code != null) socket.emit("CODE_CHANGED", code)
     })
 
     socket.on('disconnect', async () => {
@@ -132,7 +130,19 @@ io.on('connection', (socket) => {
             io.in(roomName).emit('ROOM:CONNECTION', remainUsers)
         }
         else {
-            //TODO consider remove room
+            // delete user list in a room
+            await redisClient.del(`${roomId}:users`).catch((err) => {
+                console.error(redBright.bold(`delete user list in room with ${err}`))
+                // TODO: handle error
+                return
+            })
+
+            // delete room info
+            await redisClient.del(`${roomId}:roomInfo`).catch((err) => {
+                console.error(redBright.bold(`delete roomInfo with ${err}`))
+                // TODO: handle error
+                return
+            })
         }
     })
 })
