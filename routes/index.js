@@ -28,7 +28,7 @@ router.post('/create-room-with-user', async (req, res) => {
 })
 
 router.get('/find-room-with-id', async (req, res) => {
-  const findRoomId = `${req.body['roomId']}:roomInfo`
+  const findRoomId = `${req.query['roomId']}:roomInfo`
 
   const findRoomResult = await redisClient.keys(findRoomId).catch((err) => {
     console.log(redBright.bold(`find room with ${err}`))
