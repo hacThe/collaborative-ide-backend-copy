@@ -38,6 +38,19 @@ app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
 io.on('connection', (socket) => {
+    socket.on("OUTPUT_CHANGED", async (output) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('CURSOR_CHANGED', output);
+    })
+
     socket.on('CURSOR_CHANGED', async (cursorData) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
