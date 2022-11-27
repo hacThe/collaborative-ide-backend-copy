@@ -39,7 +39,7 @@ router.get('/find-room-with-id', async (req, res) => {
   if (findRoomResult.length != 0) {
     console.log(greenBright.bold(`found rooms: ${findRoomResult}`))
     res.status(200).send({
-      "foundRoomIds": findRoomResult
+      "foundRoomIds": req.query['roomId']
     })
   } else {
     console.log(redBright.bold(`Not found room`))

@@ -51,6 +51,8 @@ io.on('connection', (socket) => {
         socket.to(roomName).emit('CODE_CHANGED', code)
     })
 
+    socket.on('DISSCONNECT_FROM_ROOM', async ({ roomId, username }) => console.log(blueBright.bold(`${username} disconnect from room ${roomId}`)))
+
     socket.on('CONNECTED_TO_ROOM', async ({ roomId, username }) => {
         const userId = socket.id
         // create user info
