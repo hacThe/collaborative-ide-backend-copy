@@ -123,6 +123,7 @@ io.on('connection', (socket) => {
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', socket.id)
                 return
             })
         const roomId = user_info['roomId']
@@ -134,31 +135,31 @@ io.on('connection', (socket) => {
 
     socket.on(SOCKET_IO_EVENT.CONNECTED_TO_ROOM, async ({ roomId, username }) => {
         const userId = socket.id
-        console.log("new user connected")
         // create user info
         await redisClient.hSet(`${userId}:userInfo`, {
             "username": username,
             "roomId": roomId,
+        }).catch((err) => {
+            console.error(redBright.bold(`create user info with ${err}`))
+            // TODO: handle error
+            handleError('Can\'t create new user information', userId)
+            return
         })
-            .catch((err) => {
-                console.error(redBright.bold(`create user info with ${err}`))
-                // TODO: handle error
-                return
-            })
 
         // add user to room
-        await redisClient.lPush(`${roomId}:users`, `${userId}`)
-            .catch((err) => {
-                console.error(redBright.bold(`add user to room with ${err}`))
-                // TODO: handle error
-                return
-            })
+        await redisClient.lPush(`${roomId}:users`, `${userId}`).catch((err) => {
+            console.error(redBright.bold(`add user to room with ${err}`))
+            // TODO: handle error
+            handleError('Can\'t add user to room', userId)
+            return
+        })
 
         // get current connected to room users
         const users = await redisClient.lRange(`${roomId}:users`, 0, -1)
             .catch((err) => {
                 console.error(redBright.bold(`get users with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get information of users in roon', userId)
                 return
             })
 
@@ -193,10 +194,11 @@ io.on('connection', (socket) => {
             .catch((err) => {
                 console.error(redBright.bold(`get code of room with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get room information', userId)
                 return
             })
         // emit event CODE_CHANGED to just connect user
-        if (code != null) socket.emit(SOCKET_IO_EVENT.CODE_CHANGED, code)
+        io.to(userId).emit(SOCKET_IO_EVENT.CODE_CHANGED, code)
     })
 
     socket.on(SOCKET_IO_EVENT.DISCONNECT, async () => {
@@ -205,6 +207,7 @@ io.on('connection', (socket) => {
         const userInfo = await redisClient.hGetAll(`${userId}:userInfo`).catch((err) => {
             console.error(redBright.bold(`get disconnect user with ${err}`))
             // TODO: handle error
+            handleError('Can\'t get user information', userId)
             return
         })
         const roomId = userInfo['roomId']
@@ -213,6 +216,7 @@ io.on('connection', (socket) => {
         await redisClient.del(`${userId}:userInfo`).catch((err) => {
             console.error(redBright.bold(`delete user info with ${err}`))
             // TODO: handle error
+            handleError('Can\'t delete user', userId)
             return
         })
 
@@ -220,12 +224,14 @@ io.on('connection', (socket) => {
         await redisClient.lRem(`${roomId}:users`, 0, userId).catch((err) => {
             console.error(redBright.bold(`remove user from room with ${err}`))
             // TODO: handle error
+            handleError('Can\'t remove user from room', userId)
             return
         })
 
         const remainUsers = await redisClient.lRange(`${roomId}:users`, 0, -1).catch((err) => {
             console.error(redBright.bold(`get remain users with ${err}`))
             // TODO: handle error
+            handleError('Can\'t get information of user in room', userId)
             return
         })
 
@@ -238,6 +244,7 @@ io.on('connection', (socket) => {
             await redisClient.del(`${roomId}:users`).catch((err) => {
                 console.error(redBright.bold(`delete user list in room with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t delete room\s user list', userId)
                 return
             })
 
@@ -245,13 +252,18 @@ io.on('connection', (socket) => {
             await redisClient.del(`${roomId}:roomInfo`).catch((err) => {
                 console.error(redBright.bold(`delete roomInfo with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t delete room', userId)
                 return
             })
         }
     })
 })
 
-server.listen(3001, '192.168.90.12', () => {
+const handleError = (message, socketId) => {
+    io.to(socketId).emit(SOCKET_IO_EVENT.ERROR, message)
+}
+
+server.listen(3001, () => {
     console.log(greenBright.bold(`listening on *:${server.address().port}`))
 })
 

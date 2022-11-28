@@ -7,7 +7,8 @@ const SOCKET_IO_EVENT = {
     CODE_CHANGED: 'CODE_CHANGED',
     CONNECTED_TO_ROOM: 'CONNECTED_TO_ROOM',
     ROOM_CONNECTION: 'ROOM:CONNECTION',
-    DISCONNECT: 'disconnect'
+    DISCONNECT: 'disconnect',
+    ERROR: 'error',
 }
 
 module.exports = REDIS_EVENT
