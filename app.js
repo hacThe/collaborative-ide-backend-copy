@@ -38,6 +38,45 @@ app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
 io.on('connection', (socket) => {
+    socket.on("CODE_INSERT", async (data) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('CODE_INSERT', data);
+    })
+
+    socket.on("CODE_REPLACE", async (data) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('CODE_REPLACE', data);
+    })
+
+    socket.on("CODE_DELETE", async (data) => {
+        const userId = socket.id
+        const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
+            .catch((err) => {
+                console.error(redBright.bold(`get user info with ${err}`))
+                // TODO: handle error
+                return
+            })
+        const roomId = user_info['roomId']
+        const roomName = `ROOM:${roomId}`
+        socket.to(roomName).emit('CODE_DELETE', data);
+    })
+
     socket.on("OUTPUT_CHANGED", async (output) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
@@ -210,7 +249,7 @@ io.on('connection', (socket) => {
     })
 })
 
-server.listen(3001, () => {
+server.listen(3001, '192.168.90.12', () => {
     console.log(greenBright.bold(`listening on *:${server.address().port}`))
 })
 
