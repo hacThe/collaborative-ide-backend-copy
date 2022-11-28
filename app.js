@@ -121,9 +121,31 @@ io.on('connection', (socket) => {
                 return
             })
 
+        // get user info (id, username) by ids
+        const userIds = users.map((ids)=>`${ids}:userInfo`)
+        
+        const userInfors = await Promise.all(userIds.map(async (id, index) => {
+            userIn4 =  await redisClient.hGetAll(id)
+            .catch((err)=> {
+                console.error(redBright.bold(`get users with ${err}`))
+                // TODO: handle error
+                return
+            })
+
+            if (userIn4 != null) {
+                userIn4['id'] = users[index]
+                return userIn4
+            }
+        }))
+
+        console.log(userInfors)
+
         const roomName = `ROOM:${roomId}`
         socket.join(roomName)
-        io.in(roomName).emit('ROOM:CONNECTION', users)
+        io.in(roomName).emit('ROOM:CONNECTION', {
+            'users': userInfors,
+            'newUserId': socket.id
+        })
 
         // get current code of roomName
         const code = await redisClient.hGet(`${roomId}:roomInfo`, 'code')
@@ -168,7 +190,7 @@ io.on('connection', (socket) => {
 
         if (remainUsers.length != 0) {
             const roomName = `ROOM:${roomId}`
-            io.in(roomName).emit('ROOM:CONNECTION', remainUsers)
+            io.in(roomName).emit('ROOM:DISCONNECT', socket.id)
         }
         else {
             // delete user list in a room
