@@ -38,86 +38,92 @@ app.use('/compiler/execute', compilerRouter);
 app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
-io.on('connection', (socket) => {
-    socket.on("CODE_INSERT", async (data) => {
+io.on(SOCKET_IO_EVENT.CONNECT, (socket) => {
+    socket.on(SOCKET_IO_EVENT.CODE_INSERT, async (data) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CODE_INSERT', data);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.CODE_INSERT, data);
     })
 
-    socket.on("CODE_REPLACE", async (data) => {
+    socket.on(SOCKET_IO_EVENT.CODE_REPLACE, async (data) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CODE_REPLACE', data);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.CODE_REPLACE, data);
     })
 
-    socket.on("CODE_DELETE", async (data) => {
+    socket.on(SOCKET_IO_EVENT.CODE_DELETE, async (data) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CODE_DELETE', data);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.CODE_DELETE, data);
     })
 
-    socket.on("OUTPUT_CHANGED", async (output) => {
+    socket.on(SOCKET_IO_EVENT.OUTPUT_CHANGED, async (output) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('OUTPUT_CHANGED', output);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.OUTPUT_CHANGED, output);
     })
 
-    socket.on('CURSOR_CHANGED', async (cursorData) => {
+    socket.on(SOCKET_IO_EVENT.CURSOR_CHANGED, async (cursorData) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('CURSOR_CHANGED', cursorData);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.CURSOR_CHANGED, cursorData);
     })
 
-    socket.on('SELECTION_CHANGED', async (selectionData) => {
+    socket.on(SOCKET_IO_EVENT.SELECTION_CHANGED, async (selectionData) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
                 console.error(redBright.bold(`get user info with ${err}`))
                 // TODO: handle error
+                handleError('Can\'t get user information', userId)
                 return
             })
         const roomId = user_info['roomId']
         const roomName = `ROOM:${roomId}`
-        socket.to(roomName).emit('SELECTION_CHANGED', selectionData);
+        socket.to(roomName).emit(SOCKET_IO_EVENT.SELECTION_CHANGED, selectionData);
     })
 
-    socket.on('CODE_CHANGED', async (code) => {
+    socket.on(SOCKET_IO_EVENT.CODE_CHANGED, async (code) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
             .catch((err) => {
@@ -179,8 +185,6 @@ io.on('connection', (socket) => {
                 return userIn4
             }
         }))
-
-        console.log(userInfors)
 
         const roomName = `ROOM:${roomId}`
         socket.join(roomName)
