@@ -38,7 +38,7 @@ app.use('/compiler/execute', compilerRouter);
 app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
-io.on(SOCKET_IO_EVENT.CONNECT, (socket) => {
+io.on(SOCKET_IO_EVENT.CONNECTION, (socket) => {
     socket.on(SOCKET_IO_EVENT.CODE_INSERT, async (data) => {
         const userId = socket.id
         const user_info = await redisClient.hGetAll(`${userId}:userInfo`)
@@ -153,12 +153,13 @@ io.on(SOCKET_IO_EVENT.CONNECT, (socket) => {
         })
 
         // add user to room
-        await redisClient.lPush(`${roomId}:users`, `${userId}`).catch((err) => {
-            console.error(redBright.bold(`add user to room with ${err}`))
-            // TODO: handle error
-            handleError('Can\'t add user to room', userId)
-            return
-        })
+        await redisClient.lPush(`${roomId}:users`, `${userId}`)
+            .catch((err) => {
+                console.error(redBright.bold(`add user to room with ${err}`))
+                // TODO: handle error
+                handleError('Can\'t add user to room', userId)
+                return
+            })
 
         // get current connected to room users
         const users = await redisClient.lRange(`${roomId}:users`, 0, -1)
@@ -241,7 +242,7 @@ io.on(SOCKET_IO_EVENT.CONNECT, (socket) => {
 
         if (remainUsers.length != 0) {
             const roomName = `ROOM:${roomId}`
-            io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_CONNECTION, socket.id)
+            io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_DISCONNECT, socket.id)
         }
         else {
             // delete user list in a room
@@ -264,7 +265,7 @@ io.on(SOCKET_IO_EVENT.CONNECT, (socket) => {
 })
 
 const handleError = (message, socketId) => {
-    io.to(socketId).emit(SOCKET_IO_EVENT.ERROR, message)
+    io.to(socketId).emit(SOCKET_IO_EVENT.DB_ERROR, message)
 }
 
 server.listen(3001, () => {

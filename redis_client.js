@@ -1,5 +1,5 @@
 const { createClient } = require('redis')
-const { greenBright, redBright } = require('chalk')
+const { redBright } = require('chalk')
 const REDIS_EVENT = require('./utils/constants')
 
 const redisClient = createClient()
