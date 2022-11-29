@@ -34,7 +34,7 @@ app.use(cookieParser());
 
 // router
 app.use('/', indexRouter);
-app.use('/compiler/execute', compilerRouter);
+app.use('/compiler', compilerRouter);
 app.use('/data/save', saveCodeRouter)
 
 // socketio event handler
