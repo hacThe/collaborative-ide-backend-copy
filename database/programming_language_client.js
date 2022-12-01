@@ -25,7 +25,7 @@ class PLClient {
     ]
 
     findLanguage(languageName) {
-        return languages.find((value) => value.name === languageName)
+        return this.languages.find((value) => value.name === languageName)
     }
 
     findVersionIndex(language, versionName) {
