@@ -213,18 +213,18 @@ io.on(SOCKET_IO_EVENT.CONNECTION, (socket) => {
         }
     })
 
-    socket.on('CHANGE_LANGUAGE', (params) => {
+    socket.on(SOCKET_IO_EVENT.CHANGE_LANGUAGE, (params) => {
         const roomId = params['roomId']
         const newLanguage = params['newLanguage']
         const roomName = `ROOM:${roomId}`
-        socket.in(roomName).emit('CHANGE_LANGUAGE', newLanguage)
+        socket.in(roomName).emit(SOCKET_IO_EVENT.CHANGE_LANGUAGE, newLanguage)
     })
 
-    socket.on('CHANGE_VERSION', (params) => {
+    socket.on(SOCKET_IO_EVENT.CHANGE_VERSION, (params) => {
         const roomId = params['roomId']
         const newVersionIndex = params['newVersionIndex']
         const roomName = `ROOM:${roomId}`
-        socket.in(roomName).emit('CHANGE_VERSION', newVersionIndex)
+        socket.in(roomName).emit(SOCKET_IO_EVENT.CHANGE_VERSION, newVersionIndex)
     })
 })
 
