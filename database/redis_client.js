@@ -1,6 +1,6 @@
 const { createClient } = require('redis')
 const { redBright } = require('chalk')
-const REDIS_EVENT = require('./utils/constants')
+const REDIS_EVENT = require('../utils/constants')
 
 const redisClient = createClient()
 // redis event handler

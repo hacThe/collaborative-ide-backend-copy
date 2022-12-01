@@ -1,6 +1,6 @@
 var express = require('express')
 var router = express.Router()
-const { redisClient } = require('../redis_client')
+const { redisClient } = require('../database/redis_client')
 const { redBright } = require('chalk')
 
 /* POST save code to Redis */

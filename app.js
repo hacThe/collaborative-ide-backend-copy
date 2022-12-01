@@ -5,7 +5,7 @@ const http = require('http')
 const { Server } = require('socket.io')
 const cors = require('cors')
 const { blueBright, greenBright, redBright } = require('chalk')
-const { redisClient } = require('./redis_client')
+const { redisClient } = require('./database/redis_client')
 require('dotenv').config()
 const SOCKET_IO_EVENT = require('./utils/constants')
 

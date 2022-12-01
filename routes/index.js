@@ -1,9 +1,12 @@
 var express = require('express');
 var router = express.Router();
-const { redisClient } = require('../redis_client')
+const { redisClient } = require('../database/redis_client')
 const moment = require('moment')
 const { greenBright, redBright } = require('chalk')
 const { v4 } = require('uuid')
+const { PLClient } = require('../database/programming_language_client')
+
+const plClient = new PLClient()
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -16,7 +19,7 @@ router.post('/create-room-with-user', async (req, res) => {
 
   await redisClient.hSet(`${roomId}:roomInfo`, {
     "created": moment().toString(),
-    "code": ""
+    "code": "",
   })
     .catch((err) => {
       console.log(redBright.bold(`create room info with ${err}`))
