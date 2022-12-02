@@ -226,6 +226,11 @@ io.on(SOCKET_IO_EVENT.CONNECTION, (socket) => {
         const roomName = `ROOM:${roomId}`
         socket.in(roomName).emit(SOCKET_IO_EVENT.CHANGE_VERSION, newVersionIndex)
     })
+
+    socket.on('COMPILE_STATE_CHANGED', ({ roomId, state }) => {
+        const roomName = `ROOM:${roomId}`
+        socket.in(roomName).emit('COMPILE_STATE_CHANGED', state)
+    })
 })
 
 const handleError = (message, socketId) => {
