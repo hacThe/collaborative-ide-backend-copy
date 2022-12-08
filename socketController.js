@@ -4,6 +4,30 @@ const { blueBright, redBright } = require('chalk')
 
 module.exports = (io, redisClient) => {
     io.on(SOCKET_IO_EVENT.CONNECTION, (socket) => {
+
+        socket.on('CONNECTED_TO_ROOM_MEDIA', async ({ roomId }) => {
+            // get current connected to room users
+            console.log('event connect to room media')
+            const users = await redisClient.lRange(`${roomId}:users`, 0, -1)
+                .catch((err) => {
+                    console.error(redBright.bold(`get users with ${err}`))
+                    // TODO: handle error
+                    handleError('Can\'t get information of users in roon', userId)
+                    return
+                })
+
+            const userInRoom = users.filter(id => id !== socket.id)
+            socket.emit('ALL_USERS', userInRoom)
+        })
+
+        socket.on('SIGNAL_SENT', ({ userToSignal, callerID, signal }) => {
+            io.to(userToSignal).emit('ROOM:CONNECTION_MEDIA', { signal, callerID })
+        })
+
+        socket.on('SIGNAL_RETURN', ({ signal, callerID }) => {
+            io.to(callerID).emit('RECEIVE_RETURN_SIGNAL', { signal, id: socket.id })
+        })
+
         socket.on(SOCKET_IO_EVENT.CODE_INSERT, async ({ roomId, data }) => {
             const roomName = `ROOM:${roomId}`
             socket.to(roomName).emit(SOCKET_IO_EVENT.CODE_INSERT, data);

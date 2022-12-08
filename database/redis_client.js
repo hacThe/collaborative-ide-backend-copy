@@ -4,6 +4,6 @@ const REDIS_EVENT = require('../utils/constants')
 
 const redisClient = createClient()
 // redis event handler
-redisClient.on(REDIS_EVENT.ERROR, () => console.log(redBright.bold('ERROR connecting to Redis')))
+redisClient.on(REDIS_EVENT.ERROR, (e) => console.log(redBright.bold(`ERROR connecting to Redis ${e}`)))
 
 module.exports.redisClient = redisClient
