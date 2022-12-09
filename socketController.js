@@ -143,6 +143,7 @@ module.exports = (io, redisClient) => {
 
         socket.on(SOCKET_IO_EVENT.DISCONNECT, async () => {
             const userId = socket.id
+
             // get disconnecting user info
             const userInfo = await redisClient.hGetAll(`${userId}:userInfo`).catch((err) => {
                 console.error(redBright.bold(`get disconnect user with ${err}`))
@@ -178,6 +179,8 @@ module.exports = (io, redisClient) => {
             if (remainUsers.length != 0) {
                 const roomName = `ROOM:${roomId}`
                 io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_DISCONNECT, socket.id)
+
+                io.in(roomName).emit('ROOM:DISCONNECTION_MEDIA', socket.id)
             }
             else {
                 // delete user list in a room
