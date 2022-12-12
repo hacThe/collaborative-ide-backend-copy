@@ -178,9 +178,8 @@ module.exports = (io, redisClient) => {
 
             if (remainUsers.length != 0) {
                 const roomName = `ROOM:${roomId}`
-                io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_DISCONNECT, socket.id)
-
                 io.in(roomName).emit('ROOM:DISCONNECTION_MEDIA', socket.id)
+                io.in(roomName).emit(SOCKET_IO_EVENT.ROOM_DISCONNECT, socket.id)
             }
             else {
                 // delete user list in a room
