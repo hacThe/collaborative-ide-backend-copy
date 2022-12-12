@@ -15,6 +15,7 @@ class ProgrammingLanguage {
     toMap() {
         return {
             'name': this.name,
+            'languageCode':this.languageCode,
             'versions': this.versions.map((element) => element.name)
         }
     }
