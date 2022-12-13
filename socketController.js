@@ -218,6 +218,13 @@ module.exports = (io, redisClient) => {
             const roomName = `ROOM:${roomId}`
             socket.in(roomName).emit(SOCKET_IO_EVENT.COMPILE_STATE_CHANGED, state)
         })
+
+        socket.on('TOGGLE_MICROPHONE', ({ userId, roomId, micState }) => {
+            const roomName = `ROOM:${roomId}`
+            socket.in(roomName).emit('SOMEONE_TOGGLE_MICROPHONE', {
+                userId, micState
+            })
+        })
     })
 
     const handleError = (message, socketId) => {
