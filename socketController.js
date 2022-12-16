@@ -225,6 +225,12 @@ module.exports = (io, redisClient) => {
                 userId, micState
             })
         })
+
+        socket.on('CHAT_MESSAGE', ({ senderId, roomId, message }) => {
+            console.log(`user ${userId} send message ${message}`)
+            const roomName = `ROOM:${roomId}`
+            socket.in(roomName).emit('CHAT_MESSAGE', { senderId, message })
+        })
     })
 
     const handleError = (message, socketId) => {
