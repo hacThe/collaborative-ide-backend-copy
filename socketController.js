@@ -226,10 +226,9 @@ module.exports = (io, redisClient) => {
             })
         })
 
-        socket.on('CHAT_MESSAGE', ({ senderId, roomId, message }) => {
-            console.log(`user ${userId} send message ${message}`)
+        socket.on('CHAT_MESSAGE', ({ username, roomId, message }) => {
             const roomName = `ROOM:${roomId}`
-            socket.in(roomName).emit('CHAT_MESSAGE', { senderId, message })
+            socket.in(roomName).emit('CHAT_MESSAGE', { 'senderName': username, message })
         })
     })
 
