@@ -139,6 +139,23 @@ module.exports = (io, redisClient) => {
                 })
             // emit event CODE_CHANGED to just connect user
             io.to(userId).emit(SOCKET_IO_EVENT.CODE_CHANGED, code)
+
+            // get current message chat of roomName
+            var roomMessages = await redisClient.lRange(`${roomId}:messages`, 0, -1)
+                .catch((err) => {
+                    console.error(redBright.bold(`get messages with ${err}`))
+                    // TODO: handle error
+                    handleError('Can\'t get messages', userId)
+                    return
+                })
+
+            roomMessages = roomMessages.map((mes, index) => {
+                return JSON.parse(mes)
+            })
+
+            // emit event CHAT_MESSAGE to just connect user
+            if (roomMessages.length !== 0)
+                io.to(userId).emit('LOAD_ROOM_MESSAGES', roomMessages)
         })
 
         socket.on(SOCKET_IO_EVENT.DISCONNECT, async () => {
@@ -226,7 +243,18 @@ module.exports = (io, redisClient) => {
             })
         })
 
-        socket.on('CHAT_MESSAGE', ({ username, roomId, message }) => {
+        socket.on('CHAT_MESSAGE', async ({ username, roomId, message }) => {
+            // Map object to string
+            var messageEntity = `{"username": "${username}", "message": "${message}"}`
+            // save into redis
+            await redisClient.rPush(`${roomId}:messages`, messageEntity)
+                .catch((err) => {
+                    console.error(redBright.bold(`save chat messages with ${err}`))
+                    // TODO: handle error
+                    handleError('Can\'t save chat messages', userId)
+                    return
+                })
+
             const roomName = `ROOM:${roomId}`
             socket.in(roomName).emit('CHAT_MESSAGE', { 'senderName': username, message })
         })
