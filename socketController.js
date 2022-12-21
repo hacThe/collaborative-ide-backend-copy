@@ -243,6 +243,13 @@ module.exports = (io, redisClient) => {
             })
         })
 
+        socket.on('TOGGLE_CAMERA', ({ userId, roomId, camState }) => {
+            const roomName = `ROOM:${roomId}`
+            socket.in(roomName).emit('SOMEONE_TOGGLE_CAMERA', {
+                userId, camState
+            })
+        })
+
         socket.on('CHAT_MESSAGE', async ({ username, roomId, message }) => {
             // Map object to string
             var messageEntity = `{"username": "${username}", "message": "${message}"}`
@@ -258,6 +265,7 @@ module.exports = (io, redisClient) => {
             const roomName = `ROOM:${roomId}`
             socket.in(roomName).emit('CHAT_MESSAGE', { 'senderName': username, message })
         })
+
     })
 
     const handleError = (message, socketId) => {
